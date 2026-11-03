@@ -1,0 +1,28 @@
+# watashi warp-plus: builds the fixed engine on every tag and publishes it.
+# Push this kit as its own repository, then: git tag v1.2.6-ws1 && git push --tags
+name: release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build, vet, test
+        env:
+          WS_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.2.6-ws1' }}
+          WS_WORK: ${{ runner.temp }}/warp-plus
+          WS_GOROOT: ${{ runner.temp }}/go
+        run: bash build.sh
+      - name: publish
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/warp-plus_linux-amd64.zip
+            dist/warp-plus_linux-arm64.zip
+            dist/SHA256SUMS
