@@ -1,5 +1,5 @@
-# watashi warp-plus: builds the fixed engine on every tag and publishes it.
-# Push this kit as its own repository, then: git tag v1.2.6-ws1 && git push --tags
+# watashi warp-plus & watashi-masque: builds both engines on every tag and publishes them.
+# Push this kit as its own repository, then: git tag v1.2.6-ws2 && git push --tags
 name: release
 on:
   push:
@@ -12,17 +12,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: build, vet, test
+      - name: build, vet, test warp-plus
         env:
-          WS_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.2.6-ws1' }}
+          WS_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.2.6-ws2' }}
           WS_WORK: ${{ runner.temp }}/warp-plus
-          WS_GOROOT: ${{ runner.temp }}/go
-        run: bash build.sh
+          WS_GOROOT: ${{ runner.temp }}/go-warp
+        run: |
+          bash build.sh
+          mkdir -p release-dist
+          cp -f dist/warp-plus_linux-*.zip release-dist/
+      - name: build, vet watashi-masque
+        env:
+          WS_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || 'v1.2.6-ws2' }}
+          WS_WORK: ${{ runner.temp }}/watashi-masque
+          WS_GOROOT: ${{ runner.temp }}/go-masque
+        run: |
+          bash build-masque.sh
+          mkdir -p release-dist
+          cp -f dist/watashi-masque_linux-*.zip release-dist/
+      - name: generate combined SHA256SUMS
+        run: |
+          cd release-dist
+          sha256sum warp-plus_linux-*.zip watashi-masque_linux-*.zip | tee SHA256SUMS
       - name: publish
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/warp-plus_linux-amd64.zip
-            dist/warp-plus_linux-arm64.zip
-            dist/SHA256SUMS
+            release-dist/warp-plus_linux-amd64.zip
+            release-dist/warp-plus_linux-arm64.zip
+            release-dist/watashi-masque_linux-amd64.zip
+            release-dist/watashi-masque_linux-arm64.zip
+            release-dist/SHA256SUMS
