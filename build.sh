@@ -13,7 +13,7 @@ cd "$(dirname -- "$0")"
 KIT=$(pwd)
 
 UPSTREAM_TAG=${UPSTREAM_TAG:-v1.2.6}
-WS_VERSION=${WS_VERSION:-v1.2.6-ws1}
+WS_VERSION=${WS_VERSION:-v1.2.6-ws2}
 GO_VERSION=${WS_GO_VERSION:-go1.22.12}
 WORK=${WS_WORK:-/opt/ws-build/warp-plus}
 GOROOT_DIR=${WS_GOROOT:-/opt/ws-build/go}
@@ -110,12 +110,12 @@ done <SHA256SUMS
 # ------------------------------------------------------------------ install
 if [ "$INSTALL" = 1 ]; then
     say "installing into the panel"
-    dst=/opt/hiddify-manager/other/warp/warpplus
+    dst=/opt/watashi-manager/other/warp/warpplus
     [ -d "$dst" ] || die "$dst does not exist"
     arch=$(host_arch)
     [ -f "$dst/warp-plus" ] && cp -f "$dst/warp-plus" "$dst/warp-plus.previous"
     install -m 755 "$WORK/out/$arch/warp-plus" "$dst/warp-plus"
     "$dst/warp-plus" version
     bash "$dst/run.sh" || true
-    echo "to go back: install -m 755 $dst/warp-plus.previous $dst/warp-plus && systemctl restart hiddify-warp"
+    echo "to go back: install -m 755 $dst/warp-plus.previous $dst/warp-plus && systemctl restart watashi-warp"
 fi
